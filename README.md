@@ -25,4 +25,89 @@ Welcome to Sturdy Octo Disco, a fun and creative project designed to overlay sun
 - Adding flair to your photos for fun.
 - Practicing computer vision workflows.
 
-Feel free to fork, contribute, or customize this project for your creative needs!
+## Program and Output:
+```
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+#Load face image
+faceImage = cv2.imread(r'C:\Users\admin\Desktop\DIPT\dipp img.jpg')
+plt.imshow(faceImage[:,:,::-1]); plt.title("Face")
+print("Face shape:", faceImage.shape)
+```
+<img width="555" height="719" alt="image" src="https://github.com/user-attachments/assets/e865b6b0-4353-4852-9cd5-5a3b6701e6fa" />
+
+```
+glassJPG = cv2.imread(r'C:\Users\admin\Pictures\Screenshots\Screenshot 2025-10-18 103941.png')
+plt.imshow(glassJPG[:,:,::-1]); plt.title("glassJPG")
+print("Glass shape:", glassJPG.shape)
+```
+<img width="868" height="434" alt="image" src="https://github.com/user-attachments/assets/1429d13f-71a5-4d87-896f-c420bd413338" />
+
+```
+glassBGR = glassJPG[:,:,0:3]
+glassGray = cv2.cvtColor(glassBGR, cv2.COLOR_BGR2GRAY)
+_, glassMask1 = cv2.threshold(glassGray, 240, 255, cv2.THRESH_BINARY_INV)  # detect non-white
+
+plt.figure(figsize=[15,15])
+#Show sunglasses color channels
+plt.subplot(121)
+plt.imshow(glassBGR[:,:,::-1])  # BGR → RGB
+plt.title('Sunglass Color channels')
+```
+<img width="490" height="284" alt="image" src="https://github.com/user-attachments/assets/2fa7f8ff-1f6f-4887-8a39-7f97d11996f9" />
+
+```
+plt.subplot(122)
+plt.imshow(glassMask1, cmap='gray')
+plt.title('Sunglass Mask (generated)')
+```
+<img width="929" height="474" alt="image" src="https://github.com/user-attachments/assets/05aa7243-56d1-4694-bfa2-30f944017479" />
+
+```
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+#Load images
+faceImage = cv2.imread(r'C:\Users\admin\Desktop\DIPT\dipp img.jpg')
+glassJPG = cv2.imread(r'C:\Users\admin\Pictures\Screenshots\Screenshot 2025-10-18 103941.png')
+
+#Check if images loaded correctly
+if faceImage is None or glassJPG is None:
+    print("Error: Check your file paths!")
+else:
+    face_h, face_w, _ = faceImage.shape
+
+    #Resize glasses to ~50% of face width
+    new_w = int(face_w * 0.5)
+    new_h = int(new_w * glassJPG.shape[0] / glassJPG.shape[1])
+    glass_resized = cv2.resize(glassJPG, (new_w, new_h))
+
+    #Create mask
+    glass_gray = cv2.cvtColor(glass_resized, cv2.COLOR_BGR2GRAY)
+    _, mask = cv2.threshold(glass_gray, 240, 255, cv2.THRESH_BINARY_INV)
+    mask_inv = cv2.bitwise_not(mask)
+
+    # Adjusted position to place glasses on eyes
+    x = int(face_w * 0.27)   # x offset (centered)
+    y = int(face_h * 0.09)   # y offset (move up from nose to eyes)
+
+    #ROI on face
+    roi = faceImage[y:y+new_h, x:x+new_w]
+
+    if roi.shape[0] > 0 and roi.shape[1] > 0:
+        bg = cv2.bitwise_and(roi, roi, mask=mask_inv)
+        fg = cv2.bitwise_and(glass_resized, glass_resized, mask=mask)
+        combined = cv2.add(bg, fg)
+        faceImage[y:y+new_h, x:x+new_w] = combined
+
+    #Show result
+    plt.figure(figsize=[10,10])
+    plt.imshow(cv2.cvtColor(faceImage, cv2.COLOR_BGR2RGB))
+    plt.title("Face with Sunglasses")
+    plt.axis("off")
+    plt.show()
+```
+<img width="681" height="860" alt="image" src="https://github.com/user-attachments/assets/888ddfdd-5d08-4496-bd80-3364aaedfbee" />
